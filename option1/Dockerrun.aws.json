@@ -1,0 +1,19 @@
+{
+    "AWSEBDockerrunVersion": "1",
+    "Image": {
+      "Name": "mbudim/sampleapp:option1",
+      "Update": "true"
+    },
+    "Ports": [
+      {
+        "ContainerPort": "8080",
+        "HostPort": "80"
+      }
+    ],
+    "Volumes": [
+        {
+          "HostDirectory": "/opt/config/sampleapp",
+          "ContainerDirectory": "/app/config"
+        }
+      ]  
+}
