@@ -10,8 +10,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-var VAULT_ADDR string
+var VAULT_HOST string
+var VAULT_PORT string
 var VAULT_TOKEN string
+var VAULT_PATH string
 
 func handler(w http.ResponseWriter, r *http.Request) {
 
@@ -34,7 +36,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	//// GET CONFIG FROM VAULT ////
 	vaultConfig := vault.NewConfig()
-	vaultConfig.Address = VAULT_ADDR
+	vaultConfig.Address = "http://" + VAULT_HOST + ":" + VAULT_PORT
 	vaultConfig.Token = VAULT_TOKEN
 
 	vaultConn, err := vault.NewClient(vaultConfig)
@@ -42,7 +44,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	secret, err := vaultConn.GetSecret("secret/sampleapp")
+	secret, err := vaultConn.GetSecret(VAULT_PATH)
 	if err != nil {
 		panic(err)
 	}
@@ -78,15 +80,33 @@ func init() {
 
 func main() {
 
-	VAULT_ADDR = os.Getenv("VAULT_ADDR")
-	if VAULT_ADDR == "" {
-		VAULT_ADDR = "http://localhost:8200"
-		log.Println("unset VAULT_ADDR. It will be set to http://localhost:8200")
+	VAULT_HOST = os.Getenv("VAULT_HOST")
+	if VAULT_HOST == "" {
+		VAULT_HOST = "localhost"
+		log.Println("VAULT_HOST is not set. It will be set to localhost")
+	} else {
+		log.Println("VAULT_HOST is set to ", VAULT_HOST)
+	}
+
+	VAULT_PORT = os.Getenv("VAULT_PORT")
+	if VAULT_PORT == "" {
+		VAULT_PORT = "8200"
+		log.Println("VAULT_PORT is not set. It will be set to 8200")
+	} else {
+		log.Println("VAULT_PORT is set to ", VAULT_PORT)
 	}
 
 	VAULT_TOKEN = os.Getenv("VAULT_TOKEN")
 	if VAULT_TOKEN == "" {
 		panic("please set environment variable VAULT_TOKEN")
+	}
+
+	VAULT_PATH = os.Getenv("VAULT_PATH")
+	if VAULT_PATH == "" {
+		VAULT_PATH = "secret/sampleapp"
+		log.Println("VAULT_PATH is not set. It will be set to ", VAULT_PATH)
+	} else {
+		log.Println("VAULT_PATH is set to", VAULT_PATH)
 	}
 
 	http.HandleFunc("/", handler)
